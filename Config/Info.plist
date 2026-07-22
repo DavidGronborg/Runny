@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Runny uses your location to map your route and measure your distance and pace while you run.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Background location access lets Runny keep tracking your route while your screen is off or you use other apps mid-run.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Runny reads your heart rate (synced from your WHOOP band) and body weight from Apple Health to show your effort and estimate calories.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Runny saves your runs to Apple Health as workouts, including distance, calories and your GPS route.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
+</dict>
+</plist>
