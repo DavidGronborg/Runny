@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#0B0B0F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Runny</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- HOME -->
+  <section class="view active" id="view-home">
+    <div class="page">
+      <header class="home-header">
+        <div>
+          <p class="eyebrow" id="home-date"></p>
+          <h1>Ready to run?</h1>
+        </div>
+        <button class="chip-btn" id="unit-toggle" title="Toggle units">KM</button>
+      </header>
+
+      <div class="card week-card">
+        <p class="eyebrow">This week</p>
+        <p class="week-distance"><span id="week-distance">0.0</span><span class="week-unit" id="week-unit">km</span></p>
+        <div class="week-stats">
+          <div class="week-stat"><b id="week-runs">0</b><span>Runs</span></div>
+          <div class="vdiv"></div>
+          <div class="week-stat"><b id="week-time">0:00</b><span>Time</span></div>
+          <div class="vdiv"></div>
+          <div class="week-stat"><b id="week-pace">--:--</b><span>Avg pace</span></div>
+        </div>
+      </div>
+
+      <h2>Recent runs</h2>
+      <div id="recent-list"></div>
+
+      <p class="demo-line">No GPS handy? <button class="link-btn" id="btn-demo">Try a demo run</button></p>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="view" id="view-history">
+    <div class="page">
+      <h1>History</h1>
+      <div id="history-list"></div>
+    </div>
+  </section>
+
+  <!-- ACTIVE RUN -->
+  <section class="view run-view" id="view-run">
+    <div id="live-map"></div>
+    <div class="gps-chip"><span class="gps-dot" id="gps-dot"></span>GPS</div>
+
+    <div class="run-panel">
+      <p class="paused-label hidden" id="paused-label">PAUSED</p>
+      <div class="run-distance-wrap">
+        <p class="run-distance" id="run-distance">0.00</p>
+        <p class="run-distance-unit" id="run-distance-unit">KM</p>
+      </div>
+      <div class="run-metrics">
+        <div class="run-metric"><b id="run-time">0:00</b><span>Time</span></div>
+        <div class="run-metric"><b id="run-pace">--:--</b><span id="run-pace-label">Pace /km</span></div>
+        <div class="run-metric"><b id="run-split">1</b><span id="run-split-label">Km</span></div>
+      </div>
+      <div class="run-controls">
+        <button class="control-btn pause" id="btn-pause" aria-label="Pause">
+          <svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg>
+        </button>
+        <button class="control-btn resume hidden" id="btn-resume" aria-label="Resume">
+          <svg viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.53.85l10.2-6.5a1 1 0 0 0 0-1.7L9.53 4.65A1 1 0 0 0 8 5.5z"/></svg>
+        </button>
+        <button class="control-btn stop" id="btn-stop" aria-label="Stop">
+          <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="overlay hidden" id="countdown">
+      <p class="eyebrow">GET READY</p>
+      <p class="countdown-number" id="countdown-number">3</p>
+      <p class="gps-status"><span class="gps-dot" id="countdown-gps-dot"></span><span id="countdown-gps-text">Locking GPS…</span></p>
+    </div>
+
+    <div class="overlay hidden" id="geo-error">
+      <p class="geo-error-icon">⚠️</p>
+      <h2>Location unavailable</h2>
+      <p class="muted" id="geo-error-text">Runny needs location access to track your run. Allow it in your browser settings.</p>
+      <button class="primary-btn" id="btn-geo-close">OK</button>
+    </div>
+  </section>
+
+  <!-- SUMMARY / DETAIL -->
+  <section class="view" id="view-summary">
+    <div class="page">
+      <header class="summary-header">
+        <div class="summary-title-wrap">
+          <button class="chip-btn hidden" id="btn-back">&lsaquo; Back</button>
+          <h1 id="summary-title">Run</h1>
+        </div>
+        <button class="chip-btn danger hidden" id="btn-delete">Delete</button>
+      </header>
+      <div id="summary-map"></div>
+      <div class="summary-headline">
+        <p><span id="summary-distance">0.00</span><span class="week-unit" id="summary-unit">km</span></p>
+        <p class="muted" id="summary-date"></p>
+      </div>
+      <div class="tiles">
+        <div class="tile"><b id="summary-time">0:00</b><span>Time</span></div>
+        <div class="tile"><b id="summary-pace">--:--</b><span id="summary-pace-label">Avg /km</span></div>
+        <div class="tile"><b id="summary-speed">0.0</b><span id="summary-speed-label">km/h</span></div>
+      </div>
+      <div class="card" id="splits-card">
+        <p class="eyebrow">Splits</p>
+        <div id="splits-list"></div>
+      </div>
+      <div class="summary-actions" id="summary-actions">
+        <button class="secondary-btn" id="btn-discard">Discard</button>
+        <button class="primary-btn" id="btn-save">Save run</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB BAR -->
+  <nav class="tab-bar" id="tab-bar">
+    <button class="tab-btn active" id="tab-home" aria-label="Home">
+      <svg viewBox="0 0 24 24"><path d="M11.34 2.55a1 1 0 0 1 1.32 0l8 7A1 1 0 0 1 21 11.3V20a2 2 0 0 1-2 2h-4a1 1 0 0 1-1-1v-5h-4v5a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2v-8.7a1 1 0 0 1 .34-.75l8-7z"/></svg>
+    </button>
+    <button class="start-btn" id="btn-start" aria-label="Start run">
+      <svg viewBox="0 0 24 24"><path d="M13.5 5.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm-3.6 2.9-2.6 1.2a1 1 0 0 0-.55.6l-.9 2.7a1 1 0 1 0 1.9.63l.76-2.28 1.7-.78-1.1 5.16a2 2 0 0 0 .66 1.94l3.6 3.1.95 3.6a1 1 0 1 0 1.94-.5l-1-3.9a2 2 0 0 0-.63-1.03l-2.1-1.85.85-3.65 1.1 1.7a1 1 0 0 0 .62.43l3 .68a1 1 0 1 0 .44-1.95l-2.6-.6-1.9-3a3 3 0 0 0-3.42-1.2l-.7.2z"/></svg>
+    </button>
+    <button class="tab-btn" id="tab-history" aria-label="History">
+      <svg viewBox="0 0 24 24"><path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1zM4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9H4z"/></svg>
+    </button>
+  </nav>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
