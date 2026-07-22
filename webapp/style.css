@@ -130,6 +130,20 @@ h2 { font-size: 19px; font-weight: 800; margin: 26px 0 12px; }
 .empty-card .icon { font-size: 30px; margin-bottom: 8px; }
 .empty-card b { display: block; font-size: 16px; font-weight: 800; margin-bottom: 4px; }
 
+.log-past-btn {
+  width: 100%;
+  margin-top: 14px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--surface);
+  border: 1.5px dashed rgba(201, 247, 58, 0.45);
+  border-radius: 20px;
+  padding: 16px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--accent);
+}
+.log-past-btn .plus { font-size: 19px; font-weight: 900; }
+
 .demo-line { text-align: center; margin-top: 26px; font-size: 13px; color: var(--text-2); }
 .link-btn { color: var(--accent); font-weight: 700; font-size: 13px; text-decoration: underline; }
 
