@@ -1,6 +1,35 @@
 # Runny 🏃
 
-A sleek, minimal run-tracking app for iPhone. Map your route, track distance and pace live, and see your heart rate from your WHOOP band via Apple Health — wrapped in a clean, dark, Strava-meets-Nike-Run-Club design.
+A sleek, minimal run-tracking app. Map your route, track distance and pace live — wrapped in a clean, dark, Strava-meets-Nike-Run-Club design.
+
+The project has two parts:
+
+| Part | Status | Purpose |
+|---|---|---|
+| **`webapp/` — web MVP** | Testable now | Route mapping + distance/pace/splits in the browser, deployable to GitHub Pages. No integrations. |
+| **iOS app (`Runny.xcodeproj`)** | Saved for a later phase | Full native app with Apple Health / WHOOP heart-rate integration. |
+
+## Web MVP (`webapp/`)
+
+Plain HTML/CSS/JS + [Leaflet](https://leafletjs.com) with free CARTO dark map tiles — no build step, no API keys, no backend.
+
+- **Live GPS tracking** in the browser (Geolocation API): route drawn on a dark map, distance, moving time, smoothed current pace, GPS-signal indicator, 3-2-1 countdown, pause/resume.
+- **Post-run summary**: fitted route map, time / avg pace / speed, per-km splits with pace bars (fastest highlighted).
+- **Home dashboard** (weekly totals + recent runs) and **monthly history**, stored in `localStorage`.
+- **km/mi toggle**, screen wake-lock during runs, installable as a home-screen app.
+- **Demo mode** — "Try a demo run" on the home screen simulates a 6× time-lapse GPS feed through the exact same pipeline (filters, pace, splits), so you can test everything from a desk.
+
+### Deploy to GitHub Pages
+
+A workflow (`.github/workflows/pages.yml`) deploys `webapp/` automatically on every push to `main`. One-time setup: repo **Settings → Pages → Source: GitHub Actions**. The app then lives at `https://<user>.github.io/Runny/`.
+
+To try it locally: `cd webapp && python3 -m http.server`, then open `http://localhost:8000` (geolocation works on `localhost`; elsewhere it requires HTTPS).
+
+Notes for phone testing: keep the screen on while tracking (browsers suspend GPS in background tabs — the app requests a wake lock to help), and GPS accuracy in browsers is a bit coarser than native.
+
+## iOS app (later phase)
+
+The full native SwiftUI app with Apple Health integration — heart rate from your WHOOP band, workouts + GPS routes written back to Health.
 
 ## Features
 
