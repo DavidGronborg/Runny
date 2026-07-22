@@ -16,6 +16,7 @@ Plain HTML/CSS/JS + [Leaflet](https://leafletjs.com) with free CARTO dark map ti
 - **Live GPS tracking** in the browser (Geolocation API): route drawn on a dark map, distance, moving time, smoothed current pace, GPS-signal indicator, 3-2-1 countdown, pause/resume.
 - **Post-run summary**: fitted route map, time / avg pace / speed, per-km splits with pace bars (fastest highlighted).
 - **Home dashboard** (weekly totals + recent runs) and **monthly history**, stored in `localStorage`.
+- **Log past runs manually** — trace the route you ran by tapping the map, distance and pace are computed automatically; type in the duration from your WHOOP (or watch) and save it like any other run.
 - **km/mi toggle**, screen wake-lock during runs, installable as a home-screen app.
 - **Demo mode** — "Try a demo run" on the home screen simulates a 6× time-lapse GPS feed through the exact same pipeline (filters, pace, splits), so you can test everything from a desk.
 

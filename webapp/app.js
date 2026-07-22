@@ -302,11 +302,11 @@ function renderSummaryMap(points) {
 
 /* ---------------- views ---------------- */
 
-const views = ['home', 'history', 'run', 'summary'];
+const views = ['home', 'history', 'run', 'summary', 'editor'];
 
 function showView(name) {
   views.forEach((v) => $(`#view-${v}`).classList.toggle('active', v === name));
-  $('#tab-bar').style.display = (name === 'run' || name === 'summary') ? 'none' : 'flex';
+  $('#tab-bar').style.display = (name === 'run' || name === 'summary' || name === 'editor') ? 'none' : 'flex';
   $('#tab-home').classList.toggle('active', name === 'home');
   $('#tab-history').classList.toggle('active', name === 'history');
   if (name === 'home') renderHome();
@@ -419,7 +419,7 @@ function openSummary(run, isNew, from = 'home') {
   $('#btn-back').classList.toggle('hidden', isNew);
 
   $('#summary-title').textContent = runTitle(run.startDate);
-  $('#summary-date').textContent = fmtShortDate(run.startDate);
+  $('#summary-date').textContent = fmtShortDate(run.startDate) + (run.manual ? ' · logged manually' : '');
   $('#summary-distance').textContent = fmtDistance(run.distance);
   $('#summary-unit').textContent = unitLabel();
   $('#summary-time').textContent = fmtDuration(run.duration);
@@ -438,7 +438,8 @@ function openSummary(run, isNew, from = 'home') {
 }
 
 function renderSplits(run) {
-  const splits = computeSplits(run.points);
+  // Manual runs have a synthetic constant pace — per-km splits would be noise.
+  const splits = run.manual ? [] : computeSplits(run.points);
   const card = $('#splits-card');
   if (!splits.length) { card.classList.add('hidden'); return; }
   card.classList.remove('hidden');
@@ -459,6 +460,126 @@ function renderSplits(run) {
           <span class="bar-track"><span class="bar${isFastest ? ' fastest' : ''}" style="display:block;width:${width}%"></span></span>
         </div>`;
     }).join('')}`;
+}
+
+/* ---------------- manual route editor ---------------- */
+
+let editorMap = null;
+let editorLine = null;
+let editorMarkers = null;
+let editorPoints = []; // Leaflet latlngs, in click order
+
+function openEditor() {
+  showView('editor');
+  editorPoints = [];
+
+  if (!editorMap) {
+    editorMap = L.map('editor-map', { zoomControl: false }).setView([55.6761, 12.5683], 14);
+    L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 19 }).addTo(editorMap);
+    editorLine = L.polyline([], { color: '#C9F73A', weight: 4, lineCap: 'round', lineJoin: 'round' }).addTo(editorMap);
+    editorMarkers = L.layerGroup().addTo(editorMap);
+    editorMap.on('click', (e) => {
+      editorPoints.push(e.latlng);
+      redrawEditor();
+    });
+  }
+  redrawEditor();
+  setTimeout(() => editorMap.invalidateSize(), 50);
+
+  // Center on the user if possible, else on their last run.
+  const lastRun = store.load()[0];
+  if (lastRun && lastRun.points.length) {
+    editorMap.setView([lastRun.points[0].lat, lastRun.points[0].lon], 14);
+  }
+  navigator.geolocation?.getCurrentPosition(
+    (pos) => { if (!editorPoints.length) editorMap.setView([pos.coords.latitude, pos.coords.longitude], 15); },
+    () => {},
+    { timeout: 4000, maximumAge: 600000 },
+  );
+
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  $('#editor-date').value =
+    `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  $('#dur-h').value = '';
+  $('#dur-m').value = '';
+  $('#dur-s').value = '';
+  updateEditorReadout();
+}
+
+function editorDistance() {
+  let meters = 0;
+  for (let i = 1; i < editorPoints.length; i++) {
+    meters += haversine(editorPoints[i - 1].lat, editorPoints[i - 1].lng,
+      editorPoints[i].lat, editorPoints[i].lng);
+  }
+  return meters;
+}
+
+function editorDuration() {
+  const h = parseInt($('#dur-h').value, 10) || 0;
+  const m = parseInt($('#dur-m').value, 10) || 0;
+  const s = parseInt($('#dur-s').value, 10) || 0;
+  return h * 3600 + m * 60 + s;
+}
+
+function redrawEditor() {
+  editorLine.setLatLngs(editorPoints);
+  editorMarkers.clearLayers();
+  editorPoints.forEach((ll, i) => {
+    L.circleMarker(ll, {
+      radius: i === 0 || i === editorPoints.length - 1 ? 6 : 4,
+      color: '#0B0B0F',
+      weight: 2,
+      fillColor: i === 0 ? '#C9F73A' : '#FFFFFF',
+      fillOpacity: 1,
+    }).addTo(editorMarkers);
+  });
+  updateEditorReadout();
+}
+
+function updateEditorReadout() {
+  const meters = editorDistance();
+  const seconds = editorDuration();
+  $('#editor-distance').textContent = fmtDistance(meters);
+  $('#editor-unit').textContent = unitLabel();
+  $('#editor-pace').textContent =
+    fmtPace(meters > 50 && seconds > 0 ? seconds / (meters / UNIT_M()) : NaN);
+  $('#editor-pace-unit').textContent = `/${unitLabel()}`;
+}
+
+function saveEditorRun() {
+  const meters = editorDistance();
+  const seconds = editorDuration();
+  if (editorPoints.length < 2 || meters < 50) {
+    alert('Trace your route first — tap the map to add at least two points.');
+    return;
+  }
+  if (seconds <= 0) {
+    alert('Enter how long the run took (check your WHOOP).');
+    return;
+  }
+  const parsed = new Date($('#editor-date').value).getTime();
+  const startDate = Number.isFinite(parsed) ? parsed : Date.now();
+
+  // Synthesize track points with time proportional to distance, so the run
+  // works everywhere a GPS-recorded run does (maps, pace, weekly stats).
+  let cumulative = 0;
+  const points = editorPoints.map((ll, i) => {
+    if (i > 0) {
+      cumulative += haversine(editorPoints[i - 1].lat, editorPoints[i - 1].lng, ll.lat, ll.lng);
+    }
+    return { lat: ll.lat, lon: ll.lng, t: seconds * (cumulative / meters), d: cumulative };
+  });
+
+  openSummary({
+    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+    startDate,
+    duration: seconds,
+    distance: meters,
+    points,
+    manual: true,
+  }, true);
 }
 
 /* ---------------- run flow ---------------- */
@@ -569,6 +690,16 @@ $('#tab-home').addEventListener('click', () => showView('home'));
 $('#tab-history').addEventListener('click', () => showView('history'));
 $('#btn-start').addEventListener('click', () => startRun(false));
 $('#btn-demo').addEventListener('click', () => startRun(true));
+
+$('#btn-add-manual').addEventListener('click', openEditor);
+$('#btn-add-manual-2').addEventListener('click', openEditor);
+$('#btn-undo-point').addEventListener('click', () => { editorPoints.pop(); redrawEditor(); });
+$('#btn-clear-points').addEventListener('click', () => { editorPoints = []; redrawEditor(); });
+$('#btn-editor-cancel').addEventListener('click', () => showView('home'));
+$('#btn-editor-save').addEventListener('click', saveEditorRun);
+['dur-h', 'dur-m', 'dur-s'].forEach((id) => {
+  $(`#${id}`).addEventListener('input', updateEditorReadout);
+});
 
 $('#unit-toggle').addEventListener('click', () => {
   settings.metric = !settings.metric;
