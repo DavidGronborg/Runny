@@ -74,6 +74,7 @@ h2 { font-size: 19px; font-weight: 800; margin: 26px 0 12px; }
   color: var(--text-2);
 }
 .chip-btn.danger { color: var(--danger); }
+.chip-btn.accent { color: var(--accent); }
 
 .week-distance { display: flex; align-items: baseline; gap: 8px; margin: 14px 0 20px; }
 .week-distance span:first-child {
@@ -199,6 +200,56 @@ h2 { font-size: 19px; font-weight: 800; margin: 26px 0 12px; }
 .control-btn.pause { background: var(--surface-light); color: #fff; }
 .control-btn.resume { background: var(--accent); color: #000; }
 .control-btn.stop { background: var(--danger); color: #fff; }
+
+/* ---------- manual route editor ---------- */
+
+#editor-map { position: absolute; inset: 0; background: var(--bg); }
+
+.editor-chips {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  left: 16px;
+  z-index: 500;
+  display: flex;
+  gap: 8px;
+}
+.editor-chips .chip-btn { background: rgba(11, 11, 15, 0.85); color: #fff; }
+
+.editor-panel { text-align: left; }
+.editor-panel .eyebrow { text-align: center; margin-bottom: 10px; }
+
+.editor-readout {
+  display: flex; align-items: baseline; justify-content: center; gap: 6px;
+  margin-bottom: 16px;
+}
+.editor-readout b { font-size: 34px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.editor-readout span { font-size: 13px; font-weight: 800; color: var(--text-2); }
+.editor-readout .dot { margin: 0 6px; }
+
+.editor-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+.editor-fields label > span:first-child {
+  display: block;
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--text-2);
+  margin-bottom: 6px;
+}
+.editor-fields input {
+  width: 100%;
+  background: var(--surface-light);
+  border: 1px solid var(--stroke);
+  border-radius: 12px;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding: 11px 10px;
+  color-scheme: dark;
+}
+.duration-inputs { display: flex; align-items: center; gap: 4px; }
+.duration-inputs input { text-align: center; padding: 11px 4px; -moz-appearance: textfield; }
+.duration-inputs input::-webkit-outer-spin-button,
+.duration-inputs input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.duration-inputs i { font-style: normal; font-weight: 900; color: var(--text-2); }
 
 /* ---------- overlays ---------- */
 

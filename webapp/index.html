@@ -41,6 +41,7 @@
       <h2>Recent runs</h2>
       <div id="recent-list"></div>
 
+      <p class="demo-line">Already ran? <button class="link-btn" id="btn-add-manual">Log a past run</button></p>
       <p class="demo-line">No GPS handy? <button class="link-btn" id="btn-demo">Try a demo run</button></p>
     </div>
   </section>
@@ -48,8 +49,47 @@
   <!-- HISTORY -->
   <section class="view" id="view-history">
     <div class="page">
-      <h1>History</h1>
+      <header class="summary-header">
+        <h1>History</h1>
+        <button class="chip-btn accent" id="btn-add-manual-2">+ Log run</button>
+      </header>
       <div id="history-list"></div>
+    </div>
+  </section>
+
+  <!-- MANUAL ROUTE EDITOR -->
+  <section class="view run-view" id="view-editor">
+    <div id="editor-map"></div>
+    <div class="editor-chips">
+      <button class="chip-btn" id="btn-undo-point">↩ Undo</button>
+      <button class="chip-btn" id="btn-clear-points">Clear</button>
+    </div>
+
+    <div class="run-panel editor-panel">
+      <p class="eyebrow">Tap the map to trace your route</p>
+      <p class="editor-readout">
+        <b id="editor-distance">0.00</b><span id="editor-unit">km</span>
+        <span class="dot">·</span>
+        <b id="editor-pace">--:--</b><span id="editor-pace-unit">/km</span>
+      </p>
+      <div class="editor-fields">
+        <label>
+          <span>Date &amp; time</span>
+          <input type="datetime-local" id="editor-date">
+        </label>
+        <label>
+          <span>Duration (from WHOOP)</span>
+          <span class="duration-inputs">
+            <input type="number" id="dur-h" min="0" max="23" placeholder="0" inputmode="numeric"><i>:</i>
+            <input type="number" id="dur-m" min="0" max="59" placeholder="45" inputmode="numeric"><i>:</i>
+            <input type="number" id="dur-s" min="0" max="59" placeholder="00" inputmode="numeric">
+          </span>
+        </label>
+      </div>
+      <div class="summary-actions">
+        <button class="secondary-btn" id="btn-editor-cancel">Cancel</button>
+        <button class="primary-btn" id="btn-editor-save">Save run</button>
+      </div>
     </div>
   </section>
 
