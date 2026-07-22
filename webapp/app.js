@@ -305,7 +305,10 @@ function renderSummaryMap(points) {
 const views = ['home', 'history', 'run', 'summary', 'editor'];
 
 function showView(name) {
-  views.forEach((v) => $(`#view-${v}`).classList.toggle('active', v === name));
+  views.forEach((v) => {
+    const el = $(`#view-${v}`);
+    if (el) el.classList.toggle('active', v === name);
+  });
   $('#tab-bar').style.display = (name === 'run' || name === 'summary' || name === 'editor') ? 'none' : 'flex';
   $('#tab-home').classList.toggle('active', name === 'home');
   $('#tab-history').classList.toggle('active', name === 'history');
@@ -686,52 +689,57 @@ function showGeoError(err) {
 
 /* ---------------- wire-up ---------------- */
 
-$('#tab-home').addEventListener('click', () => showView('home'));
-$('#tab-history').addEventListener('click', () => showView('history'));
-$('#btn-start').addEventListener('click', () => startRun(false));
-$('#btn-demo').addEventListener('click', () => startRun(true));
+/* Tolerate a stale cached index.html missing newer elements — wire what exists
+   instead of crashing the whole script on one missing node. */
+function on(id, event, handler) {
+  const el = $(id);
+  if (el) el.addEventListener(event, handler);
+}
 
-$('#btn-add-manual').addEventListener('click', openEditor);
-$('#btn-add-manual-2').addEventListener('click', openEditor);
-$('#btn-undo-point').addEventListener('click', () => { editorPoints.pop(); redrawEditor(); });
-$('#btn-clear-points').addEventListener('click', () => { editorPoints = []; redrawEditor(); });
-$('#btn-editor-cancel').addEventListener('click', () => showView('home'));
-$('#btn-editor-save').addEventListener('click', saveEditorRun);
-['dur-h', 'dur-m', 'dur-s'].forEach((id) => {
-  $(`#${id}`).addEventListener('input', updateEditorReadout);
-});
+on('#tab-home', 'click', () => showView('home'));
+on('#tab-history', 'click', () => showView('history'));
+on('#btn-start', 'click', () => startRun(false));
+on('#btn-demo', 'click', () => startRun(true));
 
-$('#unit-toggle').addEventListener('click', () => {
+on('#btn-add-manual', 'click', openEditor);
+on('#btn-add-manual-2', 'click', openEditor);
+on('#btn-undo-point', 'click', () => { editorPoints.pop(); redrawEditor(); });
+on('#btn-clear-points', 'click', () => { editorPoints = []; redrawEditor(); });
+on('#btn-editor-cancel', 'click', () => showView('home'));
+on('#btn-editor-save', 'click', saveEditorRun);
+['#dur-h', '#dur-m', '#dur-s'].forEach((id) => on(id, 'input', updateEditorReadout));
+
+on('#unit-toggle', 'click', () => {
   settings.metric = !settings.metric;
   renderHome();
 });
 
-$('#btn-pause').addEventListener('click', () => { tracker.pause(); setPausedUI(true); });
-$('#btn-resume').addEventListener('click', () => { tracker.resume(); setPausedUI(false); });
-$('#btn-stop').addEventListener('click', () => {
+on('#btn-pause', 'click', () => { tracker.pause(); setPausedUI(true); });
+on('#btn-resume', 'click', () => { tracker.resume(); setPausedUI(false); });
+on('#btn-stop', 'click', () => {
   if (tracker.state === 'paused' || confirm('Finish this run?')) finishRun();
 });
 
-$('#btn-save').addEventListener('click', () => {
+on('#btn-save', 'click', () => {
   if (summaryRun) store.add(summaryRun);
   summaryRun = null;
   showView('home');
 });
-$('#btn-discard').addEventListener('click', () => {
+on('#btn-discard', 'click', () => {
   if (confirm('Discard this run?')) { summaryRun = null; showView('home'); }
 });
-$('#btn-delete').addEventListener('click', () => {
+on('#btn-delete', 'click', () => {
   if (summaryRun && confirm('Delete this run?')) {
     store.delete(summaryRun.id);
     summaryRun = null;
     showView(summaryFrom);
   }
 });
-$('#btn-back').addEventListener('click', () => {
+on('#btn-back', 'click', () => {
   summaryRun = null;
   showView(summaryFrom);
 });
-$('#btn-geo-close').addEventListener('click', () => {
+on('#btn-geo-close', 'click', () => {
   $('#geo-error').classList.add('hidden');
   if (tracker.state !== 'running' && tracker.state !== 'paused') {
     clearInterval(uiTimer);

@@ -11,7 +11,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
@@ -38,10 +38,13 @@
         </div>
       </div>
 
+      <button class="log-past-btn" id="btn-add-manual">
+        <span class="plus">+</span> Log a past run
+      </button>
+
       <h2>Recent runs</h2>
       <div id="recent-list"></div>
 
-      <p class="demo-line">Already ran? <button class="link-btn" id="btn-add-manual">Log a past run</button></p>
       <p class="demo-line">No GPS handy? <button class="link-btn" id="btn-demo">Try a demo run</button></p>
     </div>
   </section>
@@ -181,6 +184,6 @@
   </nav>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
